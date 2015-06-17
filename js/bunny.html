@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>bunny</title>
+		<script src="libs/flwebgl-0.2.min.js"></script>
+		<script src="assets/bunny_actions.js"></script>
+		<script>
+			var player, result = flwebgl.Player.S_OK;
+			var atlasList = [], content = undefined;
+			
+			function loadContent() {
+				getAsset("assets/bunny.json", function (response) {content = JSON.parse(response); assetLoaded(); });
+				getAsset("assets/bunny_atlas.json", function (response) { atlasList.push({json:JSON.parse(response), image:"assets/bunny_atlas.png"}); assetLoaded(); });
+			}
+			
+			function assetLoaded() {
+				if (atlasList.length == 1 && content) {
+					var canvas = document.getElementById("canvas");
+					player = new flwebgl.Player();
+
+					//Create textureatlas object for all the textures which you have
+					var textureAtlasList = [];
+					for (var i = 0; i < atlasList.length; i++) {
+						textureAtlasList.push(new flwebgl.TextureAtlas(atlasList[i].json, atlasList[i].image));
+					}
+					
+					result = player.init(canvas, content, textureAtlasList, handleComplete);
+					
+					if(result === flwebgl.Player.E_CONTEXT_CREATION_FAILED) {
+						document.getElementById("err_nowebglsupport").style.display="block";
+						return;
+					} else if(result === flwebgl.Player.E_REQUIRED_EXTENSION_NOT_PRESENT) {
+						document.getElementById("err_extensionnotpresent").style.display="block";
+						return;
+					}
+					
+					//Resize the canvas and reset the viewport
+					var w = player.getStageWidth();
+					var h = player.getStageHeight();
+					canvas.width = w;
+					canvas.height = h;
+					player.setViewport(new flwebgl.geom.Rect(0, 0, w, h));				
+				}
+			}
+			
+			function getAsset(url, callbk) {
+				if (!window.XMLHttpRequest) {
+					document.getElementById("err_nowebglsupport").style.display="block";
+					return;
+				}
+				
+				var req = new XMLHttpRequest();
+				req.onreadystatechange = function() {
+					if (req.readyState == 4 && req.status == 200)
+						callbk(req.responseText);
+				};
+				req.open("GET", url, true);
+				req.send();
+			}
+			
+			function handleComplete() {
+				if(result === flwebgl.Player.S_OK) {
+					player.play();
+					
+					// ==> This is a good place to add code <==
+					main();
+				}
+			}
+
+			var bunny, defendBtn, attackBtn;
+
+			function main() {
+				var stage = player.getStage();
+				stage.addEventListener(flwebgl.events.Event.FRAME_CONSTRUCTED, ready);
+
+				document.onmousedown = pressed;
+				document.onmouseup   = released;
+			}
+
+			function ready(e) {
+				var stage = player.getStage();
+				stage.removeEventListener(flwebgl.events.Event.FRAME_CONSTRUCTED, ready);
+
+				bunny     = stage.getChildByName("bunny");
+				defendBtn = stage.getChildByName("defendBtn");
+				attackBtn = stage.getChildByName("attackBtn");
+
+				//createMovieClipInstancesExample();
+				//exitFrameExample();
+			}
+
+			function pressed(e) {
+				var pressedAt = new flwebgl.geom.Point(e.pageX, e.pageY);
+
+				var stage = player.getStage();
+				var defendBtnBounds = defendBtn.getBounds(stage);
+				var attackBtnBounds = attackBtn.getBounds(stage);
+
+				if (isPointInsideRect(pressedAt, defendBtnBounds)) {
+					defendBtnPressed();
+				} else if (isPointInsideRect(pressedAt, attackBtnBounds)) {
+					attackBtnPressed();
+				}
+			}
+
+			function released(e) {
+				attackBtn.gotoAndStop(1);
+				defendBtn.gotoAndStop(1);
+			}
+
+			function defendBtnPressed() {
+				bunny.gotoAndPlay("jump");
+				defendBtn.gotoAndStop(2);
+			}
+
+			function attackBtnPressed() {
+				bunny.gotoAndPlay("punch");
+				attackBtn.gotoAndStop(2);
+			}
+
+			function isPointInsideRect(point, rect) {
+				if (point.x > rect.left && point.x < (rect.left + rect.width)) {
+					if (point.y > rect.top && point.y < (rect.top + rect.height)) {
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			function createMovieClipInstancesExample() {
+				var stage = player.getStage();
+				var sgf   = player.getScenegraphFactory();
+				for (var i = 0; i < 10; i++) {
+					var bunny = sgf.createMovieClipInstance("Bunny");
+					var x = player.getStageWidth() * Math.random();
+					var y = player.getStageHeight() * Math.random();
+					setPosition(bunny, x, y);
+					stage.addChild(bunny);
+				}
+			}
+
+			function setPosition(target, x, y) {
+				var m = target.getLocalTransform();
+				var arr = m.getValues();
+				arr[4] = x;
+				arr[5] = y;
+				m.setValues(arr);
+				target.setLocalTransform(m);
+			}
+
+			function exitFrameExample() {
+				bunny.addEventListener(flwebgl.events.Event.EXIT_FRAME, update);
+			}
+
+			function update(e) {
+				var m = e.getTarget().getLocalTransform();
+				m.translate(1, 0);
+				e.getTarget().setLocalTransform(m);
+			}
+		</script>
+	</head>
+	<body onload="loadContent();">     
+		<canvas id="canvas" style="border: none;"></canvas>
+		<div class="error" id="err_nowebglsupport" style="display:none;"><span>Your browser does not support WebGL.</span>&nbsp;<span><a href="http://get.webgl.org">Check WebGL support.</a></span></div>
+		<div class="error" id="err_extensionnotpresent" style="display:none;">A required WebGL extension is not supported by your browser.</div>
+	</body>
+</html>
