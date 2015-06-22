@@ -11,17 +11,13 @@ import Matrix            = flwebgl.geom.Matrix;
 
 class Main {
 	
-	private document:  HTMLDocument;
-	private player:    Player;
 	private stage:     MovieClip;
 	private bunny:     MovieClip;
 	private defendBtn: MovieClip;
 	private attackBtn: MovieClip;
 
-	constructor(player: Player, document: HTMLDocument) {
+	constructor(private player: Player, private document: HTMLDocument) {
 		
-		this.document = document;
-		this.player   = player;
 		this.stage    = player.getStage();
 
 		this.stage.addEventListener(FlWebGLEvent.FRAME_CONSTRUCTED, this.ready);
