@@ -10,18 +10,14 @@ import Rect              = flwebgl.geom.Rect;
 import Matrix            = flwebgl.geom.Matrix;
 
 class Main {
-	
-	private document:  HTMLDocument;
-	private player:    Player;
+
 	private stage:     MovieClip;
 	private bunny:     MovieClip;
 	private defendBtn: MovieClip;
 	private attackBtn: MovieClip;
 
-	constructor(player: Player, document: HTMLDocument) {
-		
-		this.document = document;
-		this.player   = player;
+	constructor(private player: Player, private document: HTMLDocument) {
+
 		this.stage    = player.getStage();
 
 		this.stage.addEventListener(FlWebGLEvent.FRAME_CONSTRUCTED, this.ready);
@@ -40,26 +36,26 @@ class Main {
 
 		//this.createMovieClipInstancesExample();
 		//this.exitFrameExample();
-	}
+	};
 
 	private pressed = (e: MouseEvent) => {
 
-		var clickedAt: Point = new Point(e.pageX, e.pageY);
-		
-		var attackBtnBounds: Rect = this.attackBtn.getBounds(this.stage);
-		var defendBtnBounds: Rect = this.defendBtn.getBounds(this.stage);
+		const clickedAt = new Point(e.pageX, e.pageY);
 
-		if (this.isPointInsideRect(clickedAt, attackBtnBounds)) {
+		const attackBtnBounds = this.attackBtn.getBounds(this.stage);
+		const defendBtnBounds = this.defendBtn.getBounds(this.stage);
+
+		if (Main.isPointInsideRect(clickedAt, attackBtnBounds)) {
 			this.attackBtnPressed();
-		} else if (this.isPointInsideRect(clickedAt, defendBtnBounds)) {
+		} else if (Main.isPointInsideRect(clickedAt, defendBtnBounds)) {
 			this.defendBtnPressed();
 		}
-	}
+	};
 
 	private released = (e: Event) => {
 		this.defendBtn.gotoAndStop(1);
 		this.attackBtn.gotoAndStop(1);
-	}
+	};
 
 	private attackBtnPressed() {
 		this.attackBtn.gotoAndStop(2);
@@ -71,7 +67,7 @@ class Main {
 		this.bunny.gotoAndPlay("jump");
 	}
 
-	private isPointInsideRect(point: Point, rect: Rect) : boolean {
+	private static isPointInsideRect(point: Point, rect: Rect): boolean {
 		if (point.x > rect.left && point.x < (rect.left + rect.width)) {
 			if (point.y > rect.top && point.y < (rect.top + rect.height)) {
 				return true;
@@ -82,23 +78,23 @@ class Main {
 	}
 
 	private createMovieClipInstancesExample() {
-		const sgf: SceneGraphFactory = this.player.getScenegraphFactory();
-		for (var i: number = 0; i < 10; i++) {
-			var bunny: MovieClip = sgf.createMovieClipInstance("Bunny");
-			var x: number = this.player.getStageWidth() * Math.random();
-			var y: number = this.player.getStageHeight() * Math.random();
-			this.setPosition(bunny, x, y);
+		const sgf = this.player.getScenegraphFactory();
+		for (let i = 0; i < 10; i++) {
+			let bunny = sgf.createMovieClipInstance("Bunny");
+			let x = this.player.getStageWidth() * Math.random();
+			let y = this.player.getStageHeight() * Math.random();
+			Main.setPosition(bunny, x, y);
 			this.stage.addChild(bunny);
 		}
 	}
 
-	private setPosition(target: MovieClip, x: number, y: number) {
-		const m: Matrix = target.getLocalTransform();
-		const arr: Array<number> = m.getValues();
+	private static setPosition(target: MovieClip, x: number, y: number) {
+		const matrix = target.getLocalTransform();
+		const arr = matrix.getValues();
 		arr[4] = x;
 		arr[5] = y;
-		m.setValues(arr);
-		target.setLocalTransform(m);
+		matrix.setValues(arr);
+		target.setLocalTransform(matrix);
 	}
 
 	private exitFrameExample() {
