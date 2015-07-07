@@ -18,12 +18,13 @@ class Main {
 
 	constructor(private player: Player, private document: HTMLDocument) {
 
-		this.stage    = player.getStage();
+		this.stage = player.getStage();
 
 		this.stage.addEventListener(FlWebGLEvent.FRAME_CONSTRUCTED, this.ready);
 
-		document.onmousedown = this.pressed;
-		document.onmouseup   = this.released;
+		const canvas = document.getElementById("canvas");
+		canvas.onmousedown = this.pressed;
+		canvas.onmouseup   = this.released;
 	}
 
 	private ready = (e: FlWebGLEvent) => {
@@ -39,8 +40,8 @@ class Main {
 	};
 
 	private pressed = (e: MouseEvent) => {
-
-		const clickedAt = new Point(e.pageX, e.pageY);
+		
+		const clickedAt = new Point(e.offsetX, e.offsetY);
 
 		const attackBtnBounds = this.attackBtn.getBounds(this.stage);
 		const defendBtnBounds = this.defendBtn.getBounds(this.stage);
