@@ -6,7 +6,7 @@
 		<script src="libs/flwebgl-0.2.min.js"></script>
 		<script src="assets/bunny_actions.js"></script>
 		<script>
-			var player, result = flwebgl.Player.S_OK;
+			var player, stage, result = flwebgl.Player.S_OK;
 			var atlasList = [], content = undefined;
 			
 			function loadContent() {
@@ -71,15 +71,15 @@
 			var bunny, defendBtn, attackBtn;
 
 			function main() {
-				var stage = player.getStage();
+				stage = player.getStage();
 				stage.addEventListener(flwebgl.events.Event.FRAME_CONSTRUCTED, ready);
 
-				document.onmousedown = pressed;
-				document.onmouseup   = released;
+				var canvas = document.getElementById("canvas");
+				canvas.onmousedown = pressed.bind(this);
+				canvas.onmouseup   = released.bind(this);
 			}
 
 			function ready(e) {
-				var stage = player.getStage();
 				stage.removeEventListener(flwebgl.events.Event.FRAME_CONSTRUCTED, ready);
 
 				bunny     = stage.getChildByName("bunny");
@@ -91,9 +91,9 @@
 			}
 
 			function pressed(e) {
-				var pressedAt = new flwebgl.geom.Point(e.pageX, e.pageY);
+				
+				var pressedAt = new flwebgl.geom.Point(e.offsetX, e.offsetY);
 
-				var stage = player.getStage();
 				var defendBtnBounds = defendBtn.getBounds(stage);
 				var attackBtnBounds = attackBtn.getBounds(stage);
 
@@ -130,7 +130,6 @@
 			}
 
 			function createMovieClipInstancesExample() {
-				var stage = player.getStage();
 				var sgf   = player.getScenegraphFactory();
 				for (var i = 0; i < 10; i++) {
 					var bunny = sgf.createMovieClipInstance("Bunny");
